@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition with face-api.js</title>
+    <style>
+        #image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .face-box {
+            position: absolute;
+            border: 2px solid red;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Recognition with face-api.js</h1>
+    <div id="image-container">
+        <img id="input-image" src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS2F-TIgQw2QDJpTQSrIKZhFpu4AouhvXi1Apj1-XHOqfoIGA23vFcD5DwHCb5rgvGsOcB9VjA2vix7JpmHNtOe0_KDyfWSMQzK571lmzQ" alt="Image for face recognition" crossorigin="anonymous"/>
+    </div>
+
+    <!-- Include face-api.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
+    <script>
+        // Load models and detect faces
+        async function runFaceRecognition() {
+            // Load the models
+            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+            await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+            await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+
+            // Get the image element
+            const img = document.getElementById('input-image');
+
+            // Detect faces in the image
+            const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
+
+            // Draw the detected faces on the image
+            const canvas = faceapi.createCanvasFromMedia(img);
+            document.getElementById('image-container').append(canvas);
+            faceapi.matchDimensions(canvas, { width: img.width, height: img.height });
+
+            const resizedDetections = faceapi.resizeResults(detections, { width: img.width, height: img.height });
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+        }
+
+        // Run the face recognition when the image is loaded
+        document.getElementById('input-image').onload = runFaceRecognition;
+    </script>
+</body>
+</html>
